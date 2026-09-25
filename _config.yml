@@ -1,0 +1,17 @@
+title: Моя разношерстная стая
+description: Две собаки, три кошки, пять характеров и один дом. Честный блог о жизни с животными
+url: https://myshaggypack.ru
+author: My Shaggy Pack
+theme: jekyll-theme-minimal
+locale: ru-RU
+encoding: UTF-8
+timezone: Europe/Moscow
+
+# RSS
+feed:
+  path: rss.xml
+
+# GitHub Pages
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag

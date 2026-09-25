@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Моя разношерстная стая - блог о животных</title>
+    <link rel="alternate" type="application/rss+xml" href="/rss.xml" title="Моя разношерстная стая">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #2d3436;
+            background: #f9f9f7;
+        }
+
+        header {
+            background: linear-gradient(135deg, #f5f1e8 0%, #efe9dd 100%);
+            padding: 3rem 2rem;
+            border-bottom: 1px solid #e0d9ce;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #2d3436;
+            margin-bottom: 0.5rem;
+        }
+
+        .tagline {
+            color: #636e72;
+            font-size: 1.1rem;
+            font-style: italic;
+        }
+
+        nav {
+            background: white;
+            border-bottom: 1px solid #e0d9ce;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        nav li {
+            margin: 0;
+        }
+
+        nav a {
+            display: block;
+            padding: 1rem 1.5rem;
+            text-decoration: none;
+            color: #636e72;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        nav a:hover,
+        nav a.active {
+            color: #e17055;
+            border-bottom-color: #e17055;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 2rem;
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            .sidebar {
+                grid-column: 1;
+                grid-row: auto;
+            }
+        }
+
+        article {
+            background: white;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-radius: 4px;
+            border-left: 4px solid #e17055;
+        }
+
+        article.hidden {
+            display: none;
+        }
+
+        .article-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            margin-bottom: 1.5rem;
+            border-radius: 4px;
+        }
+
+        article h2 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            color: #2d3436;
+        }
+
+        .article-meta {
+            color: #636e72;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .article-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #f1e4d9;
+            color: #b8860b;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-right: 0.5rem;
+        }
+
+        .article-content {
+            color: #2d3436;
+            line-height: 1.8;
+        }
+
+        .article-content p {
+            margin-bottom: 1rem;
+        }
+
+        .article-content strong {
+            color: #2d3436;
+        }
+
+        .article-content em {
+            color: #636e72;
+            font-style: italic;
+        }
+
+        .sidebar {
+            order: 2;
+        }
+
+        .sidebar-box {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 4px;
+            margin-bottom: 2rem;
+            border-top: 3px solid #e17055;
+        }
+
+        .sidebar-box h3 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: #2d3436;
+            border-bottom: 1px solid #e0d9ce;
+            padding-bottom: 0.5rem;
+        }
+
+        .recent-post {
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e0d9ce;
+        }
+
+        .recent-post:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .recent-post a {
+            text-decoration: none;
+            color: #2d3436;
+            font-weight: 500;
+            display: block;
+            transition: color 0.3s;
+        }
+
+        .recent-post a:hover {
+            color: #e17055;
+        }
+
+        .recent-post-date {
+            font-size: 0.85rem;
+            color: #b2bec3;
+            margin-top: 0.3rem;
+        }
+
+        .about-text {
+            font-size: 0.95rem;
+            color: #636e72;
+            line-height: 1.7;
+        }
+
+        .about-text p {
+            margin-bottom: 0.8rem;
+        }
+
+        .hero-characters {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 4px;
+            border-top: 3px solid #e17055;
+        }
+
+        .hero-characters h3 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: #2d3436;
+        }
+
+        .character {
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e0d9ce;
+        }
+
+        .character:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .character-name {
+            font-weight: bold;
+            color: #2d3436;
+        }
+
+        .character-desc {
+            font-size: 0.9rem;
+            color: #636e72;
+            margin-top: 0.2rem;
+        }
+
+        footer {
+            background: #f5f1e8;
+            padding: 2rem;
+            text-align: center;
+            border-top: 1px solid #e0d9ce;
+            color: #636e72;
+            font-size: 0.9rem;
+            margin-top: 3rem;
+        }
+
+        .no-articles {
+            background: white;
+            padding: 2rem;
+            text-align: center;
+            color: #636e72;
+            border-radius: 4px;
+        }
+
+        .button {
+            display: inline-block;
+            background: #e17055;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background 0.3s;
+            cursor: pointer;
+            border: none;
+        }
+
+        .button:hover {
+            background: #d84032;
+        }
+
+        .rss-icon {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background: #e17055;
+            color: white;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">🐾 Моя разношерстная стая</div>
+            <div class="tagline">Две собаки, три кошки, пять характеров и один дом</div>
+        </div>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a class="nav-link active" data-category="new">Что нового</a></li>
+            <li><a class="nav-link" data-category="sonya">Соня</a></li>
+            <li><a class="nav-link" data-category="malysh">Малыш</a></li>
+            <li><a class="nav-link" data-category="dusya">Дуся</a></li>
+            <li><a class="nav-link" data-category="hilya">Хиля</a></li>
+            <li><a class="nav-link" data-category="rysia">Рыся</a></li>
+            <li><a class="nav-link" data-category="vet">Ветеринария</a></li>
+            <li><a class="nav-link" data-category="about">О канале</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <main id="content">
+            <!-- Статьи будут вставлены сюда -->
+        </main>
+
+        <aside class="sidebar">
+            <div class="sidebar-box">
+                <h3>📰 Последние посты</h3>
+                <div id="recent-posts"></div>
+            </div>
+
+            <div class="hero-characters">
+                <h3>🐾 Наши герои</h3>
+                <div class="character">
+                    <div class="character-name">Соня</div>
+                    <div class="character-desc">Китайская хохлатая собачка, нежная и ранимая</div>
+                </div>
+                <div class="character">
+                    <div class="character-name">Малыш</div>
+                    <div class="character-desc">Дворовый пёс с золотым сердцем</div>
+                </div>
+                <div class="character">
+                    <div class="character-name">Дуся</div>
+                    <div class="character-desc">Сбежавшая из квартиры кошка</div>
+                </div>
+                <div class="character">
+                    <div class="character-name">Хиля</div>
+                    <div class="character-desc">Ласковая кошка с характером</div>
+                </div>
+                <div class="character">
+                    <div class="character-name">Рыся</div>
+                    <div class="character-desc">Юная охотница</div>
+                </div>
+            </div>
+
+            <div class="sidebar-box">
+                <h3>🔗 RSS Лента</h3>
+                <a href="/rss.xml" class="button">
+                    <span class="rss-icon">RSS</span>Подписаться на RSS
+                </a>
+            </div>
+        </aside>
+    </div>
+
+    <footer>
+        <p>© 2026 Моя разношерстная стая | Честный блог о жизни с пятью очень разными животными</p>
+        <p style="margin-top: 1rem; font-size: 0.85rem;">Контакты: @myshaggypack (Дзен) | Написать письмо: hello@shaggypack.ru</p>
+    </footer>
+
+    <script>
+        // Все статьи
+        const articles = [
+            {
+                id: 1,
+                title: "Наша Соня перенесла операцию",
+                category: "sonya",
+                date: "16 сентября 2026",
+                tags: ["Здоровье", "Личный опыт", "Истории"],
+                image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400'%3E%3Crect fill='%23f5e6d3' width='600' height='400'/%3E%3Ctext x='50%' y='50%' font-size='48' fill='%23d084a8' text-anchor='middle' dominant-baseline='middle' font-family='Arial'%3E🐕 Соня после операции%3C/text%3E%3C/svg%3E",
+                content: `Честно говоря, я даже не ожидал, что это будет так сложно. Соня всегда была нежной, ранимой, но когда врач сказал, что нужна операция, я почувствовал себя виноватым, как никогда.
+
+Всё началось с того, что я заметил, что она стала ещё менее активной. Китайская хохлатая и без того предпочитает спать на коленях, но в этот раз что-то было не так. На осмотре врач обнаружил проблему со спиной — никогда не думал, что у такой малышки могут быть такие сложности.
+
+<strong>Главное, что я понял во время реабилитации:</strong> собака чувствует вашу тревогу. Чем спокойнее я был, тем расслабленнее вела себя Соня. Первые дни после операции я просто сидел рядом, не давал ей прыгать, старался минимизировать движения.
+
+На третий день она попыталась встать сама. Это был самый волнующий момент. Ножки дрожали, но она встала. Я едва не заплакал.
+
+<em>Совет: если у вас маленькая собачка с длинной спиной, уже сейчас подумайте о профилактике. Лестницы — враг номер один. У нас теперь есть специальные пандусы по всему дому.</em>
+
+Прошло две недели, Соня уже бегает (ну, почти), и жизнь возвращается в нормальное русло. Но я её теперь трогаю очень осторожно.`
+            },
+            {
+                id: 2,
+                title: "Кошка перестала есть воду из миски. Когда это действительно опасно?",
+                category: "vet",
+                date: "14 сентября 2026",
+                tags: ["Ветеринария", "Здоровье", "Советы"],
+                image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400'%3E%3Crect fill='%23e8f4f8' width='600' height='400'/%3E%3Ctext x='50%' y='50%' font-size='48' fill='%23007bff' text-anchor='middle' dominant-baseline='middle' font-family='Arial'%3E💧 Вода и кошки%3C/text%3E%3C/svg%3E",
+                content: `Дуся вдруг начала игнорировать свою миску с водой. Первая реакция была паника, но дочь (5 курс ветакадемии) сказала: "Мам, это нормально". И вот почему.
+
+<strong>Что я заметил:</strong> Дуся пьёт воду только из крана. Когда я включаю кран на кухне — она прибегает, мяукает, требует воду. Из миски — ни в жизнь.
+
+Оказывается, это частая поведенческая особенность кошек. Многие из них предпочитают проточную воду стоячей. Почему? Предположительно, потому что в природе кошки пили из ручьёв и потоков, а не из луж.
+
+<strong>Когда это ДЕЙСТВИТЕЛЬНО опасно:</strong>
+- Кошка вообще не пьёт (ни из миски, ни из крана, ни откуда)
+- Она стала пить намного больше, чем обычно
+- Вместе с отказом от воды идёт отказ от еды
+- Появилась вялость, апатия
+
+<strong>Что я сделал:</strong> Купил фонтанчик для кошек. Решение банальное, но Дуся полюбила его с первого дня. Она довольна, я спокоен. Все выигрывают.
+
+<em>Дисклеймер: Я не ветеринар, я просто хозяйка, которая наступила на эти грабли. Но если кошка не пьёт совсем — бегом к врачу!</em>`
+            },
+            {
+                id: 3,
+                title: "Я думал, что Малыш просто выпрашивает еду. Оказалось, всё не так просто",
+                category: "malysh",
+                date: "10 сентября 2026",
+                tags: ["Личный опыт", "Поведение", "Советы"],
+                image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400'%3E%3Crect fill='%23fce8e6' width='600' height='400'/%3E%3Ctext x='50%' y='50%' font-size='48' fill='%23c1272d' text-anchor='middle' dominant-baseline='middle' font-family='Arial'%3E🐕 Малыш голоден?%3C/text%3E%3C/svg%3E",
+                content: `Малыш сидит рядом, смотрит в душу и грустно мяукает. Я автоматически подходил к кухне и открывал ему новую баночку. Казалось, что этот парень никогда не сыт.
+
+Но потом я заметил кое-что странное: когда я кладу еду в миску, он ест немного и уходит. Если я предлагаю ласку — вот тогда он действительно светится счастьем.
+
+<strong>Момент озарения:</strong> Малыш не голодал. Он хотел внимания.
+
+Мы подобрали его с улицы полтора года назад. Он был запуганным, худым, недоверчивым. Я кормил его, думая, что это главное. Но оказалось, что этому парню нужно было что-то совсем другое — уверенность, что его не бросят.
+
+Теперь я реагирую на его "мяуканье о еде" по-другому. Сначала я проверяю, есть ли в миске еда. Если есть — сажу его рядом, лежу с ним, даю ласку. Иногда разговариваю с ним, как с человеком (да, я сумасшедший).
+
+<em>Результат: Малыш ест лучше, выглядит здоровее, а главное — спокойнее. И я трачу меньше корма. Все довольны.</em>
+
+Если у вас спасённое животное — помните, что иногда "голод" на самом деле — это просьба о любви.`
+            },
+            {
+                id: 4,
+                title: "Почему кошка всегда приземляется на лапы? Вот почему я не стану это проверять",
+                category: "hilya",
+                date: "8 сентября 2026",
+                tags: ["Разбор мифов", "Поведение", "Безопасность"],
+                image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400'%3E%3Crect fill='%23fff4e6' width='600' height='400'/%3E%3Ctext x='50%' y='50%' font-size='48' fill='%23ff9e00' text-anchor='middle' dominant-baseline='middle' font-family='Arial'%3E🐱 Хиля летит!%3C/text%3E%3C/svg%3E",
+                content: `Хиля прыгнула со стола. Я инстинктивно подскочил. А она, развернувшись в воздухе, приземлилась на лапы, как ниндзя. Я потом час гуглил, почему это так.
+
+<strong>Вот что я узнал (благодаря дочке-ветеринару):</strong>
+
+Кошки действительно имеют врождённый рефлекс приземления. Он называется "вестибулярный рефлекс" или "инстинкт выпрямления". Когда кошка падает, она очень быстро переворачивается, чтобы приземлиться на лапы. Это происходит в миллисекунды.
+
+<strong>НО.</strong> Это НЕ означает, что она не может получить травму. Вот почему:
+- Рефлекс требует минимального расстояния для срабатывания
+- При падении с большой высоты кошка может разогнаться настолько, что даже правильное приземление не спасает
+- Удар остаётся ударом, даже если лапы оказались внизу
+
+<em>Я случайно оставил окно на кухне открытым. Хиля выпала со 2 этажа. Приземлилась на лапы. Я был в панике, но всё обошлось. Но врач сказал, что со мной повезло. Со следующего дня окна закрыты герметично.</em>
+
+<strong>Главный вывод:</strong> Не полагайтесь на этот рефлекс. Закрывайте окна, убирайте высокие и опасные места. Кошка может быть ловкой, но она не супергерой.`
+            },
+            {
+                id: 5,
+                title: "7 продуктов со стола, которые я больше не даю животным",
+                category: "new",
+                date: "5 сентября 2026",
+                tags: ["Питание", "Безопасность", "Советы", "Список"],
+                image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400'%3E%3Crect fill='%23e8f5e9' width='600' height='400'/%3E%3Ctext x='50%' y='50%' font-size='48' fill='%2328a745' text-anchor='middle' dominant-baseline='middle' font-family='Arial'%3E🚫 Запреты на еду%3C/text%3E%3C/svg%3E",
+                content: `Когда Малыша только привезли домой, я думал, что можно дать ему "немного" со своего стола. Потом начались проблемы, и я начал гуглить. Теперь я — боевая подруга животных.
+
+<strong>Список зла (который я приобрёл на собственной шкуре):</strong>
+
+1. <strong>Шоколад.</strong> Да, все это знают, но я дал ему шоколадный печенье, думая, что это не настоящий шоколад. Ошибка. Малыша вырвало весь вечер.
+
+2. <strong>Авокадо.</strong> Красивый, полезный для нас. Для животных — яд. У них нет необходимых ферментов для его переваривания.
+
+3. <strong>Лук и чеснок.</strong> Они разрушают красные кровяные клетки. Даже в маленьких количествах опасны.
+
+4. <strong>Виноград и изюм.</strong> Могут вызвать почечную недостаточность. Я даже не знал об этом, пока Дуся не съела пару ягод.
+
+5. <strong>Ксилит (сахарозаменитель).</strong> Содержится в жвачке, некоторых десертах. Для кошек и собак — смертельно опасен. Даже малое количество может привести к гипогликемии.
+
+6. <strong>Макадамия (орехи).</strong> Токсичны для собак. Не знаю, почему, но врач была категорична.
+
+7. <strong>Молоко и молочные продукты.</strong> Не все животные могут переваривать лактозу. Я это выяснил, когда Рыся начала странно себя вести после йогурта.
+
+<strong>Итог:</strong> Я прошла через три месяца "экспериментов", чтобы выяснить, чем можно, а чем нельзя. Если вы только начинаете содержать животное — сэкономьте себе нервы и деньги на ветеринара. Давайте им только то, что одобрено.`
+            },
+            {
+                id: 6,
+                title: "Как я спасла Дусю: история кошки со скамейки парка",
+                category: "dusya",
+                date: "1 сентября 2026",
+                tags: ["Истории", "Личный опыт", "Эмоции"],
+                image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400'%3E%3Crect fill='%23f3e5f5' width='600' height='400'/%3E%3Ctext x='50%' y='50%' font-size='48' fill='%239c27b0' text-anchor='middle' dominant-baseline='middle' font-family='Arial'%3E🐱 История Дуси%3C/text%3E%3C/svg%3E",
+                content: `Я первый раз увидела Дусю на скамейке парка в начале сентября. Она сидела, свернувшись калачиком, игнорируя всех. Я прошла мимо, но потом вернулась.
+
+Кошка была грязной, худой, с помятым ухом. Явно уличная. Я присела рядом и она... не убежала. Просто посмотрела на меня пустым взглядом.
+
+"Привет, красавица. Как дела?" — спросила я, как дурачка.
+
+Она мяукнула в ответ. Это был самый жалкий звук, который я когда-либо слышала.
+
+<strong>Что дальше?</strong> Я забрала её домой. Не спросила разрешения у никого, не думала о том, что у меня уже четверо животных. Просто забрала.
+
+Первые дни Дуся прятались под кроватью. Я ей носила еду, воду, старалась не напугать ещё больше. Малыш и Соня её игнорировали (спасибо им за такт). Хиля пыталась подружиться, но Дуся кидалась в ответ.
+
+<strong>Переломный момент?</strong> Прошло две недели. Я сидел на диване, читал. Дуся медленно вылезла из-под кровати, подошла, легла мне на колени и... начала мурлыкать. Я едва не заплакал.
+
+Сейчас, спустя полгода, Дуся — полная противоположность той жалкой кошке со скамейки. Она требовательна, ласкова, любит играть. Иногда я вижу, что она вспоминает про улицу (зажимается при резких звуках), но дома она в безопасности.
+
+<strong>Главный урок:</strong> Спасённые животные помнят добро. Они отплачивают преданностью, которую даже домашние кошки не всегда показывают.`
+            },
+            {
+                id: 7,
+                title: "О канале \"Моя разношерстная стая\"",
+                category: "about",
+                date: "постоянно",
+                tags: ["Информация"],
+                image: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400'%3E%3Crect fill='%23f5f1e8' width='600' height='400'/%3E%3Ctext x='50%' y='50%' font-size='48' fill='%232d3436' text-anchor='middle' dominant-baseline='middle' font-family='Arial'%3E📖 О нас%3C/text%3E%3C/svg%3E",
+                content: `<strong>Добро пожаловать!</strong>
+
+Это честный блог о жизни с пятью очень разными животными. Здесь нет идеальной картинки, ветеринарного справочника и претензий на супер-экспертность. Здесь — реальные истории, реальные ошибки и реальные выводы.
+
+<strong>Кто здесь пишет?</strong>
+
+Я — просто хозяйка пяти животных, которая наступила на собственные грабли и теперь хочет помочь вам их избежать. Моя дочь Екатерина (5 курс ветеринарной академии) помогает мне с медицинской частью контента и проверкой фактов.
+
+<strong>Наши герои:</strong>
+
+🐕 <strong>Соня</strong> — китайская хохлатая собачка, нежная и ранимая. Мамина любимица.
+
+🐕 <strong>Малыш</strong> — подобран со улицы полтора года назад. Самый благодарный пёс на свете.
+
+🐱 <strong>Дуся</strong> — бывшая уличная кошка, которая сбежала из квартиры соседей и волею судьбы попала к нам.
+
+🐱 <strong>Хиля</strong> — ласковая кошка с характером. Ловкая как ниндзя.
+
+🐱 <strong>Рыся</strong> — молодая охотница, которая считает, что весь мир ей принадлежит.
+
+<strong>Что вы найдёте в канале?</strong>
+
+- Реальные истории питомцев с именами, датами и деталями
+- Практические советы, которые я реально использую
+- Разбор медицинских вопросов (с дисклеймерами)
+- Развенчивание мифов о животных
+- Иногда — просто рассказы о том, как живётся с нашей стаей
+
+<strong>Главный принцип:</strong> Человек > алгоритм. Мы пишем для людей, которые ищут не советы "по учебнику", а реальный опыт тех, кто уже прошёл через это.
+
+<strong>Контакты:</strong>
+
+Дзен: @myshaggypack
+Email: hello@shaggypack.ru
+RSS: Подписывайтесь на нашу ленту
+
+Спасибо, что вы здесь.`
+            }
+        ];
+
+        const contentDiv = document.getElementById('content');
+        const recentPostsDiv = document.getElementById('recent-posts');
+
+        function renderArticles(category) {
+            contentDiv.innerHTML = '';
+            const filtered = category === 'new' || category === 'about' 
+                ? articles.filter(a => a.category === category)
+                : articles.filter(a => a.category === category);
+
+            if (filtered.length === 0) {
+                contentDiv.innerHTML = '<div class="no-articles">В этой рубрике ещё нет статей. Заглядывайте позже!</div>';
+                return;
+            }
+
+            filtered.forEach(article => {
+                const tagsHtml = article.tags.map(tag => `<span class="tag">${tag}</span>`).join('');
+                const html = `
+                    <article>
+                        <img src="${article.image}" alt="${article.title}" class="article-image">
+                        <h2>${article.title}</h2>
+                        <div class="article-meta">
+                            <span>📅 ${article.date}</span>
+                        </div>
+                        <div style="margin-bottom: 1rem;">${tagsHtml}</div>
+                        <div class="article-content">${article.content}</div>
+                    </article>
+                `;
+                contentDiv.innerHTML += html;
+            });
+        }
+
+        function updateRecentPosts() {
+            const sorted = [...articles].sort((a, b) => {
+                const dateOrder = {
+                    "16 сентября 2026": 7,
+                    "14 сентября 2026": 6,
+                    "10 сентября 2026": 5,
+                    "8 сентября 2026": 4,
+                    "5 сентября 2026": 3,
+                    "1 сентября 2026": 2,
+                    "постоянно": 1
+                };
+                return dateOrder[b.date] - dateOrder[a.date];
+            }).slice(0, 5);
+
+            recentPostsDiv.innerHTML = sorted.map(article => `
+                <div class="recent-post">
+                    <a href="javascript:void(0)" onclick="selectCategory('${article.category}')">${article.title}</a>
+                    <div class="recent-post-date">${article.date}</div>
+                </div>
+            `).join('');
+        }
+
+        function selectCategory(category) {
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.dataset.category === category) {
+                    link.classList.add('active');
+                }
+            });
+            renderArticles(category);
+        }
+
+        // Инициализация
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                selectCategory(link.dataset.category);
+            });
+        });
+
+        updateRecentPosts();
+        renderArticles('new');
+
+        // Переход на категорию из параметра URL
+        const params = new URLSearchParams(window.location.search);
+        if (params.has('category')) {
+            selectCategory(params.get('category'));
+        }
+    </script>
+</body>
+</html>
