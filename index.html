@@ -310,6 +310,9 @@
         .editor-status { margin-top: 0.75rem; font-size: 0.9rem; color: #636e72; min-height: 1.3em; }
         .editor-status.success { color: #2d7a46; }
         .editor-status.warning { color: #9a6b00; }
+.rework-form { margin-top: 0.9rem; display: none; }
+        .rework-form textarea { width: 100%; min-height: 110px; padding: 0.75rem; border: 1px solid #d6cec2; border-radius: 5px; resize: vertical; font: inherit; box-sizing: border-box; }
+        .rework-form .submit-rework { margin-top: 0.6rem; }
 
         .rss-icon {
             display: inline-block;
@@ -613,7 +616,11 @@ RSS: Подписывайтесь на нашу ленту
                             <div class="editor-panel-title">Решение редактора</div>
                             <div class="editor-panel-buttons">
                                 <button class="editor-action dzen" onclick="articleDecision(${article.id}, 'dzen')">Передать в Дзен</button>
-                                <button class="editor-action rework" onclick="articleDecision(${article.id}, 'rework')">На доработку</button>
+                                <button class="editor-action rework" onclick="showReworkForm(${article.id})">На доработку</button>
+                            </div>
+                            <div id="rework-form-${article.id}" class="rework-form">
+                                <textarea id="rework-comments-${article.id}" placeholder="Напишите, что нужно исправить, уточнить или переделать..."></textarea>
+                                <button class="editor-action submit-rework" onclick="submitRework(${article.id})">Отправить замечания</button>
                             </div>
                             <div id="editor-status-${article.id}" class="editor-status"></div>
                         </div>
@@ -624,9 +631,9 @@ RSS: Подписывайтесь на нашу ленту
         }
 
 
-        const EDITOR_WEBHOOK_URL = '';
+        const EDITOR_WEBHOOK_URL = 'https://editorial-proxy.sng216.workers.dev/editorial-decision';
 
-        function articleDecision(articleId, decision) {
+        function sendDecision(articleId, decision, comments = '') {
             const article = articles.find(a => a.id === articleId);
             const status = document.getElementById('editor-status-' + articleId);
             if (!article || !status) return;
@@ -637,17 +644,12 @@ RSS: Подписывайтесь на нашу ленту
                 articleId: article.id,
                 title: article.title,
                 decision,
+                comments,
                 updatedAt: new Date().toISOString()
             }));
 
-            if (!EDITOR_WEBHOOK_URL) {
-                status.className = 'editor-status warning';
-                status.textContent = decisionText + ': решение сохранено. Подключение n8n ещё не включено.';
-                return;
-            }
-
             status.className = 'editor-status';
-            status.textContent = 'Передаём...';
+            status.textContent = 'Передаём в редакцию...';
 
             fetch(EDITOR_WEBHOOK_URL, {
                 method: 'POST',
@@ -658,7 +660,8 @@ RSS: Подписывайтесь на нашу ленту
                     category: article.category,
                     date: article.date,
                     content: article.content,
-                    decision
+                    decision,
+                    comments
                 })
             })
             .then(response => {
@@ -668,9 +671,35 @@ RSS: Подписывайтесь на нашу ленту
             })
             .catch(error => {
                 status.className = 'editor-status warning';
-                status.textContent = 'Решение сохранено на сайте, но передача в n8n не выполнена.';
+                status.textContent = 'Не удалось передать решение в редакцию. Локальная запись сохранена.';
                 console.error(error);
             });
+        }
+
+        function articleDecision(articleId, decision) {
+            sendDecision(articleId, decision);
+        }
+
+        function showReworkForm(articleId) {
+            const form = document.getElementById('rework-form-' + articleId);
+            if (form) {
+                form.style.display = 'block';
+                document.getElementById('rework-comments-' + articleId)?.focus();
+            }
+        }
+
+        function submitRework(articleId) {
+            const input = document.getElementById('rework-comments-' + articleId);
+            const comments = input ? input.value.trim() : '';
+            const status = document.getElementById('editor-status-' + articleId);
+            if (!comments) {
+                if (status) {
+                    status.className = 'editor-status warning';
+                    status.textContent = 'Укажите, что именно нужно исправить.';
+                }
+                return;
+            }
+            sendDecision(articleId, 'rework', comments);
         }
 
         function updateRecentPosts() {
