@@ -300,6 +300,17 @@
             background: #d84032;
         }
 
+        .editor-panel { margin-top: 1.5rem; padding: 1rem; background: #faf7f2; border: 1px solid #e0d9ce; border-radius: 6px; }
+        .editor-panel-title { font-weight: 600; margin-bottom: 0.75rem; color: #2d3436; }
+        .editor-panel-buttons { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+        .editor-action { padding: 0.65rem 1rem; border: 1px solid #d6cec2; border-radius: 5px; background: white; color: #2d3436; cursor: pointer; font-weight: 500; }
+        .editor-action:hover { border-color: #e17055; }
+        .editor-action.dzen { background: #e17055; color: white; border-color: #e17055; }
+        .editor-action.rework { background: #f5f1e8; }
+        .editor-status { margin-top: 0.75rem; font-size: 0.9rem; color: #636e72; min-height: 1.3em; }
+        .editor-status.success { color: #2d7a46; }
+        .editor-status.warning { color: #9a6b00; }
+
         .rss-icon {
             display: inline-block;
             width: 20px;
@@ -598,9 +609,67 @@ RSS: Подписывайтесь на нашу ленту
                         </div>
                         <div style="margin-bottom: 1rem;">${tagsHtml}</div>
                         <div class="article-content">${article.content}</div>
+                        <div class="editor-panel">
+                            <div class="editor-panel-title">Решение редактора</div>
+                            <div class="editor-panel-buttons">
+                                <button class="editor-action dzen" onclick="articleDecision(${article.id}, 'dzen')">Передать в Дзен</button>
+                                <button class="editor-action rework" onclick="articleDecision(${article.id}, 'rework')">На доработку</button>
+                            </div>
+                            <div id="editor-status-${article.id}" class="editor-status"></div>
+                        </div>
                     </article>
                 `;
                 contentDiv.innerHTML += html;
+            });
+        }
+
+
+        const EDITOR_WEBHOOK_URL = '';
+
+        function articleDecision(articleId, decision) {
+            const article = articles.find(a => a.id === articleId);
+            const status = document.getElementById('editor-status-' + articleId);
+            if (!article || !status) return;
+
+            const decisionText = decision === 'dzen' ? 'Передача в Дзен' : 'Возврат на доработку';
+
+            localStorage.setItem('editorDecision:' + articleId, JSON.stringify({
+                articleId: article.id,
+                title: article.title,
+                decision,
+                updatedAt: new Date().toISOString()
+            }));
+
+            if (!EDITOR_WEBHOOK_URL) {
+                status.className = 'editor-status warning';
+                status.textContent = decisionText + ': решение сохранено. Подключение n8n ещё не включено.';
+                return;
+            }
+
+            status.className = 'editor-status';
+            status.textContent = 'Передаём...';
+
+            fetch(EDITOR_WEBHOOK_URL, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    articleId: article.id,
+                    title: article.title,
+                    category: article.category,
+                    date: article.date,
+                    content: article.content,
+                    decision
+                })
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                status.className = 'editor-status success';
+                status.textContent = decisionText + ': принято.';
+            })
+            .catch(error => {
+                status.className = 'editor-status warning';
+                status.textContent = 'Решение сохранено на сайте, но передача в n8n не выполнена.';
+                console.error(error);
             });
         }
 
