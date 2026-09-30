@@ -310,6 +310,9 @@
         .editor-status { margin-top: 0.75rem; font-size: 0.9rem; color: #636e72; min-height: 1.3em; }
         .editor-status.success { color: #2d7a46; }
         .editor-status.warning { color: #9a6b00; }
+        .article-workflow-status { margin: 0 0 1rem; padding: 0.7rem 0.9rem; border-radius: 5px; background: #f5f1e8; color: #6b6257; font-weight: 600; }
+        .article-workflow-status.rework { background: #fff4df; color: #8a6500; }
+        .article-workflow-status.dzen { background: #eaf6ee; color: #2d7a46; }
 .rework-form { margin-top: 0.9rem; display: none; }
         .rework-form textarea { width: 100%; min-height: 110px; padding: 0.75rem; border: 1px solid #d6cec2; border-radius: 5px; resize: vertical; font: inherit; box-sizing: border-box; }
         .rework-form .submit-rework { margin-top: 0.6rem; }
@@ -603,6 +606,11 @@ RSS: Подписывайтесь на нашу ленту
 
             filtered.forEach(article => {
                 const tagsHtml = article.tags.map(tag => `<span class="tag">${tag}</span>`).join('');
+                const savedStatus = JSON.parse(localStorage.getItem('editorStatus:' + article.id) || 'null');
+                const workflowStatusHtml = savedStatus
+                    ? `<div id="article-workflow-status-${article.id}" class="article-workflow-status ${savedStatus.state}" style="display:block;">${savedStatus.state === 'dzen' ? 'Направлена в Дзен · ' + savedStatus.sentDate : 'Статья находится на доработке'}</div>`
+                    : `<div id="article-workflow-status-${article.id}" class="article-workflow-status" style="display:none;"></div>`;
+                const controlsHidden = savedStatus ? ' style="display:none;"' : '';
                 const html = `
                     <article>
                         <img src="${article.image}" alt="${article.title}" class="article-image">
@@ -612,9 +620,10 @@ RSS: Подписывайтесь на нашу ленту
                         </div>
                         <div style="margin-bottom: 1rem;">${tagsHtml}</div>
                         <div class="article-content">${article.content}</div>
+                        ${workflowStatusHtml}
                         <div class="editor-panel">
                             <div class="editor-panel-title">Решение редактора</div>
-                            <div class="editor-panel-buttons">
+                            <div class="editor-panel-buttons"${controlsHidden}>
                                 <button class="editor-action dzen" onclick="articleDecision(${article.id}, 'dzen')">Передать в Дзен</button>
                                 <button class="editor-action rework" onclick="showReworkForm(${article.id})">На доработку</button>
                             </div>
@@ -666,8 +675,42 @@ RSS: Подписывайтесь на нашу ленту
             })
             .then(response => {
                 if (!response.ok) throw new Error('HTTP ' + response.status);
+                const now = new Date();
+                const dateText = now.toLocaleDateString('ru-RU');
+                const workflowStatus = document.getElementById('article-workflow-status-' + articleId);
+                const form = document.getElementById('rework-form-' + articleId);
+                const buttons = status.closest('.editor-panel')?.querySelector('.editor-panel-buttons');
+
+                if (decision === 'rework') {
+                    localStorage.setItem('editorStatus:' + articleId, JSON.stringify({
+                        state: 'rework',
+                        label: 'Статья находится на доработке',
+                        comments,
+                        updatedAt: now.toISOString()
+                    }));
+                    if (workflowStatus) {
+                        workflowStatus.className = 'article-workflow-status rework';
+                        workflowStatus.textContent = 'Статья находится на доработке';
+                        workflowStatus.style.display = 'block';
+                    }
+                } else {
+                    localStorage.setItem('editorStatus:' + articleId, JSON.stringify({
+                        state: 'dzen',
+                        label: 'Направлена в Дзен',
+                        sentDate: dateText,
+                        updatedAt: now.toISOString()
+                    }));
+                    if (workflowStatus) {
+                        workflowStatus.className = 'article-workflow-status dzen';
+                        workflowStatus.textContent = 'Направлена в Дзен · ' + dateText;
+                        workflowStatus.style.display = 'block';
+                    }
+                }
+
+                if (form) form.style.display = 'none';
+                if (buttons) buttons.style.display = 'none';
                 status.className = 'editor-status success';
-                status.textContent = decisionText + ': принято.';
+                status.textContent = decision === 'dzen' ? 'Материал передан в Дзен.' : 'Замечания приняты. Материал отправлен на доработку.';
             })
             .catch(error => {
                 status.className = 'editor-status warning';
