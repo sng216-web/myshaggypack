@@ -45,7 +45,7 @@ async function decision(i,kind){
  if(kind==="rework"){comments=document.getElementById("comments-"+i).value.trim();if(!comments){result.textContent="Нужно указать замечания.";return}}
  result.textContent="Передаём решение…";
  try{
-  const r=await fetch(API+"/api/articles/"+encodeURIComponent(a.id)+"/decision",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({decision:kind,comments})});
+  const r=await fetch(API+"/api/articles/"+encodeURIComponent(a.id)+"/decision",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({decision:kind,comments,title:a.title})});
   const data=await r.json();
   if(!r.ok||!data.ok)throw new Error(data.error||("HTTP "+r.status));
   await load();
