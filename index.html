@@ -789,7 +789,7 @@ RSS: Подписывайтесь на нашу ленту
 
         async function loadPublishedArticles() {
             try {
-                const response = await fetch('https://dzen-publisher.sng216.workers.dev/api/articles?status=site', {cache: 'no-store'});
+                const response = await fetch('https://dzen-publisher.sng216.workers.dev/api/articles?status=editorial', {cache: 'no-store'});
                 if (!response.ok) return;
                 const remote = await response.json();
                 remote.reverse().forEach((a, index) => {
