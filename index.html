@@ -52,9 +52,9 @@ async function decision(i,kind){
 }
 async function load(){
  try{
-  const r=await fetch(API+"/api/articles?status=site",{cache:"no-store"});
+  const r=await fetch(API+"/api/articles",{cache:"no-store"});
   if(!r.ok)throw new Error("HTTP "+r.status);
-  articles=await r.json();
+  articles=(await r.json()).filter(a=>["site","review"].includes(a.status));
   render();
  }catch(e){document.getElementById("content").innerHTML='<div class="error">Не удалось загрузить редакционный предпросмотр: '+esc(e.message)+'</div>'}
 }
