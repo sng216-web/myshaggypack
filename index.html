@@ -16,6 +16,7 @@ header{background:#f5f1e8;padding:2.5rem 1.5rem;border-bottom:1px solid #e0d9ce}
 <script>
 const API="https://dzen-publisher.sng216.workers.dev";
 let articles=[];
+let busy=false;
 function esc(s){return String(s??"").replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]))}
 function statusInfo(a){
  if(a.status==="revision") return ["На доработке","revision"];
@@ -39,19 +40,28 @@ function render(){
  }).join("");
 }
 function showRework(i){document.getElementById("form-"+i).style.display="block";document.getElementById("comments-"+i).focus()}
+function isEditing(){
+ if(busy)return true;
+ for(const f of document.querySelectorAll(".rework-form")){if(f.style.display==="block")return true}
+ for(const t of document.querySelectorAll(".rework-form textarea")){if(t.value.trim()||document.activeElement===t)return true}
+ return false;
+}
 async function decision(i,kind){
  const a=articles[i], result=document.getElementById("result-"+i);
  let comments="";
  if(kind==="rework"){comments=document.getElementById("comments-"+i).value.trim();if(!comments){result.textContent="Нужно указать замечания.";return}}
  result.textContent="Передаём решение…";
+ busy=true;
  try{
   const r=await fetch(API+"/api/articles/"+encodeURIComponent(a.id)+"/decision",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({decision:kind,comments,title:a.title})});
   const data=await r.json();
   if(!r.ok||!data.ok)throw new Error(data.error||("HTTP "+r.status));
-  await load();
- }catch(e){result.textContent="Решение не принято: "+e.message}
+  result.textContent=(kind==="dzen"?"✓ Передано в Дзен.":"✓ Отправлено на доработку.")+" Обновляю список…";
+  setTimeout(function(){busy=false;load(true)},2500);
+ }catch(e){busy=false;result.textContent="Решение не принято: "+e.message}
 }
-async function load(){
+async function load(force){
+ if(!force&&isEditing())return;
  try{
   const r=await fetch(API+"/api/articles",{cache:"no-store"});
   if(!r.ok)throw new Error("HTTP "+r.status);
@@ -59,8 +69,8 @@ async function load(){
   render();
  }catch(e){document.getElementById("content").innerHTML='<div class="error">Не удалось загрузить редакционный предпросмотр: '+esc(e.message)+'</div>'}
 }
-load();
-setInterval(load,30000);
+load(true);
+setInterval(function(){load(false)},30000);
 </script>
 </body>
 </html>
