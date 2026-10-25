@@ -11,12 +11,22 @@ header{background:#f5f1e8;padding:2.5rem 1.5rem;border-bottom:1px solid #e0d9ce}
 </style>
 </head>
 <body>
-<header><div class="header-content"><div class="logo">🐾 Моя разношёрстная стая</div><div class="tagline">Предпросмотр материалов редакции</div></div></header>
+<header><div class="header-content"><div class="logo">🐾 Моя разношёрстная стая</div><div class="tagline">Предпросмотр материалов редакции · <a href="#" onclick="logout();return false" style="color:#636e72">сменить пароль</a></div></div></header>
 <main class="container"><div id="content"><div class="empty">Загрузка материалов…</div></div></main>
 <script>
 const API="https://dzen-publisher.sng216.workers.dev";
 let articles=[];
 let busy=false;
+const KEY_NAME="editor_key";
+function getKey(){try{return localStorage.getItem(KEY_NAME)||""}catch(e){return ""}}
+function setKey(k){try{localStorage.setItem(KEY_NAME,k)}catch(e){}}
+function clearKey(){try{localStorage.removeItem(KEY_NAME)}catch(e){}}
+function authHeaders(){return {"x-editor-key":getKey(),"content-type":"application/json"}}
+function showLogin(msg){
+ document.getElementById("content").innerHTML='<div class="workflow"><h2>Вход для редактора</h2><p class="meta">'+esc(msg||"Введите пароль редактора. Он сохранится в этом браузере, повторно вводить не потребуется.")+'</p><input id="pw" type="password" autocomplete="current-password" style="width:100%;padding:.75rem;font:inherit;border:1px solid #d6cec2;border-radius:5px;margin:.5rem 0"><button class="button dzen" onclick="login()">Войти</button></div>';
+}
+function login(){const v=document.getElementById("pw").value.trim();if(!v)return;setKey(v);load(true)}
+function logout(){clearKey();showLogin()}
 function esc(s){return String(s??"").replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]))}
 function statusInfo(a){
  if(a.status==="revision") return ["На доработке","revision"];
@@ -53,7 +63,9 @@ async function decision(i,kind){
  result.textContent="Передаём решение…";
  busy=true;
  try{
-  const r=await fetch(API+"/api/articles/"+encodeURIComponent(a.id)+"/decision",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({decision:kind,comments,title:a.title})});
+  const r=await fetch(API+"/api/articles/"+encodeURIComponent(a.id)+"/decision",{method:"POST",headers:authHeaders(),body:JSON.stringify({decision:kind,comments,title:a.title})});
+  if(r.status===401){busy=false;clearKey();showLogin("Пароль не подошёл. Введите ещё раз.");return}
+  if(r.status===429){busy=false;result.textContent="Слишком много неверных попыток. Подождите 10 минут.";return}
   const data=await r.json();
   if(!r.ok||!data.ok)throw new Error(data.error||("HTTP "+r.status));
   result.textContent=(kind==="dzen"?"✓ Передано в Дзен.":"✓ Отправлено на доработку.")+" Обновляю список…";
@@ -61,9 +73,12 @@ async function decision(i,kind){
  }catch(e){busy=false;result.textContent="Решение не принято: "+e.message}
 }
 async function load(force){
+ if(!getKey()){if(force)showLogin();return}
  if(!force&&isEditing())return;
  try{
-  const r=await fetch(API+"/api/articles",{cache:"no-store"});
+  const r=await fetch(API+"/api/articles",{cache:"no-store",headers:{"x-editor-key":getKey()}});
+  if(r.status===401){clearKey();showLogin("Пароль не подошёл. Введите ещё раз.");return}
+  if(r.status===429){document.getElementById("content").innerHTML='<div class="error">Слишком много неверных попыток. Подождите 10 минут и обновите страницу.</div>';return}
   if(!r.ok)throw new Error("HTTP "+r.status);
   articles=(await r.json()).filter(a=>["site","review"].includes(a.status));
   render();
